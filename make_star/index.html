@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>별찍기</title>
+</head>
+<body>
+	<script>
+		// 1. 1개씩 증가
+		console.log('1. 1개씩 증가');
+		for (let i = 1; i <= 5; i++) {
+			console.log('*'.repeat(i));
+		}
+
+		console.log('2. 거꾸로 별찍기');
+		for (let d = 5; d > 0; d--) {
+			console.log('*'.repeat(d));
+		}
+
+		console.log('3. 두배로 늘어나는 별찍기');
+		for (let v = 1; v <= 10; v *= 2) {
+			console.log('*'.repeat(v));
+		}
+		
+		console.log('4. 두개씩 작아지는 별찍기');
+		for (let p = 8; p >= 2; p -= 2) {
+			console.log('*'.repeat(p));
+		}
+
+		console.log('5. 공백이 있는 작아지는 별');
+		for (let r = 5; r > 0; r--) {
+			console.log(' '.repeat(5 - r) + '*'.repeat(r));
+		}
+
+		console.log('6. 트리모양의 별찍기');
+		for (let o = 1; o <= 5; o++) {
+			console.log(' '.repeat(5 - o) + '*'.repeat(o * 2 - 1));
+		}
+	</script>
+</body>
+</html>
