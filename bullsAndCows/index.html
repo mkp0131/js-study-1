@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>숫자야구</title>
+</head>
+<body>
+	
+
+	<script>
+
+		function game() {
+			// 1 ~ 9 까지의 수 중 랜덤으로 숫자 4개를 뽑는다.
+			let numbers = [1,2,3,4,5,6,7,8,9];
+			// 문제 번호
+			let question_numbers = [];
+			// 답
+			let strike = 0;
+			let ball = 0;
+			let res_txt = '';
+			let success = false;
+
+			for (let i = 0; i < 4; i++) {
+				const random_index = Math.floor(Math.random() * numbers.length);
+				question_numbers.push(numbers.splice(random_index, 1)[0]);
+			}
+			console.log(question_numbers);
+	
+			// 답을 입력받고 결과를 알려준다.
+			for (let p = 0; p < 2; p++) {
+	
+				// 답 초기화
+				strike = 0;
+				ball = 0;
+				res_txt = '';
+	
+				const res = prompt('정답을 말해주세요.');
+				const res_numbers = res.split('');
+				for (let v = 0; v < question_numbers.length; v++) {
+					const q_num = question_numbers[v];
+					for (let d = 0; d < res_numbers.length; d++) {
+						const r_num = res_numbers[d];
+						if(q_num == r_num) {
+							if(v === d) {
+								strike++;
+							}
+							else {
+								ball++;
+							}
+						}
+					}
+				}
+	
+				if(strike === 4) {
+					success = true;
+					break;
+				}
+				if(strike) {
+					res_txt += strike + ' 스트라이크';
+				}
+				if(strike && ball) {
+					res_txt += ' / ';
+				}
+				if(ball) {
+					res_txt += ball + ' 볼';
+				}
+				alert(res_txt);
+	
+			}
+	
+			if(success) {
+				alert('성공했습니다. 🎉');
+				game();
+			}
+			else {
+				alert('실패했습니다. 🥵\n정답은 ' + question_numbers.join() + ' 입니다.');
+				game();
+			}
+
+		}
+
+		game();
+	</script>
+</body>
+</html>
