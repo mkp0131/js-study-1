@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>lotto</title>
+</head>
+<body>
+	<style>
+		.lotto {display: flex; gap: 10px;}
+		.lotto > div {
+			width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; border-radius: 50%;
+		}
+		.lotto > div:last-child {
+			margin-left: 10px;
+			position: relative;
+		}
+		.lotto > div:last-child:after {
+			content: '';
+			position: absolute;
+			left: -10px;
+			width: 1px;
+			height: 10px;
+			background: black;
+		}
+	</style>
+
+	<div class="js-lotto lotto"></div>
+
+	<script>
+		// 1. 1~45 까지 숫자가 든 묶음 생성
+		let numbers = Array(45).fill().map((num, index) => index + 1);
+		// 2. 숫자묶음을 섞기
+		let suffle = [];
+		while (numbers.length > 0) {
+			suffle.push(numbers.splice(Math.floor(Math.random() * numbers.length), 1)[0]);
+		}
+
+		// 3. 셔플 숫자 묶음 에서 램덤 index 로 숫자를 추출(원본 수정)
+		let ex_numbers = [];
+		for (let index = 0; index < 7; index++) {
+			ex_numbers.push(suffle.splice(Math.floor(Math.random() * suffle.length), 1)[0]);
+		}
+		ex_numbers.sort((a, b) => a > b);
+
+		// 4. html 에 표시
+		const lotto = document.querySelector('.js-lotto');
+		ex_numbers.forEach(num => {
+			const numBall = document.createElement('div');
+			let numBallBg = '';
+			if(num > 40) {
+				numBallBg = 'green';
+			}
+			else if (num > 30) {
+				numBallBg = 'gray';
+			}
+	
+			else if (num > 20) {
+				numBallBg = 'red';
+			}
+			else if (num > 10) {
+				numBallBg = 'blue';
+			}
+			else {
+				numBallBg = 'yellow';
+			}
+	
+
+			numBall.style.background = numBallBg;
+			
+			numBall.textContent = num;
+			lotto.appendChild(numBall);
+		});
+		console.log('ex_numbers', ex_numbers);
+	</script>
+</body>
+</html>
