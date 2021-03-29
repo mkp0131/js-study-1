@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>가위바위보</title>
+</head>
+<body>
+	<style>
+		.RPS {
+			width: 100px;
+			height: 100px;
+			border: 3px solid #000;
+			background-image: url('./images/RPS.png');
+			background-size: 300px 100px;
+			background-position: 0px 0px;
+			background-repeat: no-repeat;
+			position: relative;
+		}
+		.btn-RPS {
+			margin-top: 10px;
+		}
+		.game-result {
+			position: absolute;
+			background: rgba(0, 0, 0, 0.5);
+			color: #fff;
+			font-weight: 700;
+			width: 100%;
+			height: 100%;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+		.btn-restart {
+			margin: 10px;
+		}
+	</style>
+	<div class="RPS js-RPS" data-current="rock"></div>
+	<div class="btn-RPS js-btn-RPS">
+		<button data-current="0">바위</button>
+		<button data-current="1">가위</button>
+		<button data-current="2">보</button>
+	</div>
+	<button class="js-btn-restart btn-restart" onclick="gameInit();">재시작</button>
+	<script>
+		// 가위바위보 섞기 
+		const RPS = document.querySelector('.js-RPS');
+		let bgPosition = 0;
+		let RPSIndex = 0;
+		let RPSInterval = null;
+
+		const game = () => {
+			RPSInterval = setInterval(() => {
+				if(bgPosition >= 200) {
+					bgPosition = 0;
+					RPSIndex = 0;
+				}
+				else {
+					bgPosition += 100;
+					RPSIndex++;
+				}
+				RPS.dataset.current = RPSIndex;
+				RPS.style.backgroundPosition = `-${bgPosition}px`;
+			}, 100);
+		}
+
+		// 버튼 눌렀을때 가위바위보 결과 실행
+		const btnRPS = document.querySelector('.js-btn-RPS');
+		btnRPS.addEventListener('click', (e) => {
+			const btnCurrent = e.target.dataset.current;
+			const RPSCurrent = RPS.dataset.current;
+			let gameResult = '';
+			if(btnCurrent !== undefined) {
+				clearInterval(RPSInterval);
+				if(RPSCurrent === btnCurrent) {
+					gameResult = '무승부';
+				}
+				else {
+					switch (RPSCurrent - btnCurrent) {
+						case -1:
+							gameResult = '졌다';
+							break;
+						case 2:
+							gameResult = '졌다';
+							break;
+					
+						default:
+							gameResult = '이겼다';
+							break;
+					}
+				}
+				RPS.innerHTML = `<div class="game-result">${gameResult}</div>`;
+			}
+		});
+
+		const gameInit = () => {
+			RPS.innerHTML = '';
+			game();
+		}
+
+		game();
+	</script>
+</body>
+</html>
