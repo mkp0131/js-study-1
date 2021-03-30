@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>지뢰찾기</title>
+</head>
+<body>
+	<style>
+		table {
+			border: 1px solid #dbdbdb;
+		}
+		td {
+			width: 30px;
+			height: 30px;
+			border: 1px solid #dbdbdb;
+			background: #fafafa;
+		}
+	</style>
+
+	<form onsubmit="gameInit();">
+		가로: <input type="text" name="hor" class="js-game-hor" value="10" />
+		세로: <input type="text" name="ver" class="js-game-ver" value="10" />
+		지뢰: <input type="text" name="mine" class="js-game-mine" value="20" />
+		<button type="submit">생성</button>
+	</form>
+	<hr />
+
+
+	<script>
+		let madeGame = false;
+		const gameInit = () => {
+			// 서브밋 방지
+			event.preventDefault();
+
+			// 게임중복생성방지
+			if(madeGame) return;
+			madeGame = true;
+
+			// input value 가져오기
+			const gameHor = parseInt(document.querySelector('.js-game-hor').value);
+			const gameVer = parseInt(document.querySelector('.js-game-ver').value);
+			const gameMine = parseInt(document.querySelector('.js-game-mine').value);
+	
+			// 게임데이터 생성 (1: 안전, 2: 지뢰)
+			let gameBoard = [];
+			for (let index = 0; index < gameVer; index++) {
+				let gameBoardRow = Array(gameHor).fill().map(item => 1);
+				gameBoard.push(gameBoardRow);
+			}
+
+			// 지뢰생성
+			let gameBoardRange = gameHor * gameVer;
+			let gameBoardMineNumbers = [];
+			let gameBoardNumbers = Array(gameBoardRange).fill().map((item, index) => index + 1);
+			while (gameBoardNumbers.length > gameBoardRange - gameMine) {
+				gameBoardMineNumbers.push(gameBoardNumbers.splice(Math.random() * gameBoardNumbers.length, 1)[0]);
+			}
+			gameBoardMineNumbers.sort((a,b) => a - b);
+
+			// 게임보드 생성
+			const table = document.createElement('table');
+			table.classList.add('js-game-board');
+			gameBoard.forEach((row, rowIndex) => {
+				const tr = document.createElement('tr');
+				row.forEach((ver, verIndex) => {
+					const td = document.createElement('td');
+					td.dataset.no = (rowIndex * gameHor) + (verIndex + 1);
+					tr.appendChild(td);
+				})
+				table.appendChild(tr);
+			});
+			document.body.appendChild(table);
+
+			// 게임보드에 지뢰 심기 & 게임데이터에 지뢰 넣기
+			gameBoardMineNumbers.forEach(num => {
+				const target = document.querySelector(`.js-game-board td[data-no="${num}"]`);
+				target.innerHTML = '💣';
+				const mineRow = Math.floor(num / gameHor);
+				const mineCol = (num % gameHor) - 1;
+				gameBoard[mineRow][mineCol] = 2;
+			});
+			
+
+			console.log('gameBoard', gameBoard);
+		}
+	</script>
+</body>
+</html>
