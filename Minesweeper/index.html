@@ -11,11 +11,48 @@
 		table {
 			border: 1px solid #dbdbdb;
 		}
-		td {
+		table td {
 			width: 30px;
 			height: 30px;
 			border: 1px solid #dbdbdb;
+			background: #bdbdbd;
+			text-align: center;
+			cursor: pointer;
+		}
+		table td.open {
 			background: #fafafa;
+		}
+		
+		.timer {
+			font-size: 32px;
+			font-weight: 700;
+		}
+		.flag {
+			font-size: 28px;
+			font-weight: 700;
+		}
+		.lose-msg {
+			position: fixed;
+			left: 20px;
+			top: 50px;
+			background: #fafafa;
+			border-radius: 50px;
+			overflow: hidden;
+			padding: 10px 30px;
+			cursor: pointer;
+		}
+
+		.lose-msg:hover {
+			opacity: 0.1;
+		}
+		.complete table {
+			pointer-events: none;
+		}
+		.complete table td {
+			background: #444;
+		}
+		.complete table td.open {
+			background: #bdbdbd;
 		}
 	</style>
 
@@ -26,7 +63,7 @@
 		<button type="submit">생성</button>
 	</form>
 	<hr />
-
+	<div class="js-game-borad"></div>
 
 	<script>
 		let madeGame = false;
@@ -35,8 +72,8 @@
 			event.preventDefault();
 
 			// 게임중복생성방지
-			if(madeGame) return;
-			madeGame = true;
+			const gameBoardElement = document.querySelector('.js-game-borad');
+			gameBoardElement.innerHTML = '';
 
 			// input value 가져오기
 			const gameHor = parseInt(document.querySelector('.js-game-hor').value);
@@ -67,23 +104,160 @@
 				row.forEach((ver, verIndex) => {
 					const td = document.createElement('td');
 					td.dataset.no = (rowIndex * gameHor) + (verIndex + 1);
+					td.dataset.flag = "false";
 					tr.appendChild(td);
 				})
 				table.appendChild(tr);
 			});
-			document.body.appendChild(table);
+			gameBoardElement.appendChild(table);
 
 			// 게임보드에 지뢰 심기 & 게임데이터에 지뢰 넣기
 			gameBoardMineNumbers.forEach(num => {
 				const target = document.querySelector(`.js-game-board td[data-no="${num}"]`);
 				target.innerHTML = '💣';
-				const mineRow = Math.floor(num / gameHor);
-				const mineCol = (num % gameHor) - 1;
+				const mineRow = Math.floor((num - 1) / gameHor);
+				const mineCol = (num - 1) % gameHor;
 				gameBoard[mineRow][mineCol] = 2;
 			});
-			
+
 
 			console.log('gameBoard', gameBoard);
+
+			// 타이머 만들기
+			function addZeroForSingleDigit(digit) {
+				let result = digit;
+				if(digit < 10) {
+					result = '0' + digit;
+				}
+				return result;
+			}
+			const timer = document.createElement('div');
+			timer.classList.add('timer');
+			let timerSecond = 0;
+			timer.innerHTML = "00:00";
+			setInterval(() => {
+				timerSecond++;
+				timer.innerHTML = addZeroForSingleDigit(Math.floor(timerSecond / 60)) + ":" + addZeroForSingleDigit(timerSecond % 60);
+			}, 1000);
+			gameBoardElement.appendChild(timer);
+
+			// 깃발 갯수 카운트
+			let LimitFlag = gameMine;
+			const LimitFlagElement = document.createElement('div');
+			LimitFlagElement.classList.add('flag');
+			function flagElementReflash(limit) {
+				LimitFlagElement.innerHTML = `🚩 ${limit}`;
+				gameBoardElement.appendChild(LimitFlagElement);
+			}
+			flagElementReflash(LimitFlag);
+
+			// 우클릭 깃발 생성 이벤트리스너
+			let mineFlagNumbers = [];
+			table.addEventListener('contextmenu', function(e) {
+				e.preventDefault();
+
+				function checkMineFlag(targetNo) {
+					const findIndex = mineFlagNumbers.indexOf(targetNo);
+					if(findIndex > -1) {
+						mineFlagNumbers.splice(findIndex, 1);
+						LimitFlag++;
+						flagElementReflash(LimitFlag);
+					}
+				}
+
+				const targetNo = e.target.dataset.no;
+				if(!targetNo) return;
+				if(e.target.dataset.flag === "false") {
+					e.target.dataset.flag = "true";
+					e.target.innerHTML = '🚩';
+					mineFlagNumbers.push(targetNo);
+					LimitFlag--;
+					flagElementReflash(LimitFlag);
+				}
+				else if(e.target.dataset.flag === "true") {
+					e.target.innerHTML = '❓';
+					checkMineFlag(targetNo);
+					e.target.dataset.flag = "mark";
+				}
+				else {
+					e.target.innerHTML = '';
+					checkMineFlag(targetNo);
+					e.target.dataset.flag = "false";
+				}
+				console.log('깃발', mineFlagNumbers);
+			});
+
+			// 칸을 클릭했을때
+			table.addEventListener('click', function(e) {
+				const targetNo = e.target.dataset.no;
+				if(!targetNo) return; // 외부영역 클릭방지
+				const targetFlag = e.target.dataset.flag;
+				if(targetFlag !== "false") return; // 물음표, 느낌표 있을시 클릭방지 
+
+				const mineRow = Math.floor((targetNo - 1) / gameHor);
+				const mineCol = (targetNo - 1) % gameHor;
+				const target = e.target;
+				target.classList.add('open');
+
+				if(gameBoard[mineRow][mineCol] === 2) {
+					target.innerHTML = '💥';
+					const loseMsg = document.createElement('h1');
+					loseMsg.classList.add('lose-msg')
+					loseMsg.innerHTML = 'You are lose 🥵';
+					gameBoardElement.appendChild(loseMsg);
+					gameBoardElement.classList.add('complete');
+				}
+				else {
+					// #체크범위
+					let checkRange = [];
+					// 위
+					if(mineRow - 1 >= 0) {
+						checkRange.push([gameBoard[mineRow - 1][mineCol], (mineRow - 1) * gameHor + mineCol]);
+					}
+					// 아래
+					if(mineRow + 1 < gameVer) {
+						checkRange.push([gameBoard[mineRow + 1][mineCol], (mineRow + 1) * gameHor + mineCol]);
+					}
+					// 왼쪽
+					if(mineCol - 1 >= 0) {
+						checkRange.push([gameBoard[mineRow][mineCol - 1], mineRow * gameHor + mineCol - 1]);
+					}
+					// 오른쪽
+					if(mineCol + 1 < gameHor) {
+						checkRange.push([gameBoard[mineRow][mineCol + 1], mineRow * gameHor + mineCol + 1]);
+					}
+					// 위,왼쪽
+					if(mineRow - 1 >= 0 && mineCol - 1 >= 0) {
+						checkRange.push([gameBoard[mineRow - 1][mineCol - 1], (mineRow - 1) * gameHor + mineCol - 1]);
+					}
+					// 위,오른쪽
+					if(mineRow - 1 >= 0 && mineCol + 1 < gameHor) {
+						checkRange.push([gameBoard[mineRow - 1][mineCol + 1], (mineRow - 1) * gameHor + mineCol + 1]);
+					}
+					// 아래,왼쪽
+					if(mineRow + 1 < gameVer && mineCol - 1 >= 0) {
+						checkRange.push([gameBoard[mineRow + 1][mineCol - 1], (mineRow + 1) * gameHor + mineCol - 1]);
+					}
+					// 아래,오른쪽
+					if(mineRow + 1 < gameVer && mineCol + 1 < gameHor) {
+						checkRange.push([gameBoard[mineRow + 1][mineCol + 1], (mineRow + 1) * gameHor + mineCol + 1]);
+					}
+					// #체크범위에 Mine체크
+					const checkRangeResult = checkRange.filter(mine => mine[0] === 2).length;
+					target.innerHTML = (checkRangeResult) ? checkRangeResult : '';
+					// #클릭한 범위가 0이면 주변에 숫자가 나올때까지 open하기
+					if(checkRangeResult === 0) {
+						checkRange.forEach(checkTarget => {
+							const dataNo = parseInt(checkTarget[1]) + 1;
+							const clickTarget = document.querySelector(`.js-game-board td[data-no="${dataNo}"]`);
+							if(!clickTarget.classList.contains('open')) {
+								clickTarget.click();
+							}
+						});
+					}
+				}
+			});
+
 		}
 	</script>
 </body>
