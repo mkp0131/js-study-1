@@ -74,6 +74,9 @@
 			// 게임중복생성방지
 			const gameBoardElement = document.querySelector('.js-game-borad');
 			gameBoardElement.innerHTML = '';
+			if(gameBoardElement.classList.contains('complete')) {
+				gameBoardElement.classList.remove('complete');
+			}
 
 			// input value 가져오기
 			const gameHor = parseInt(document.querySelector('.js-game-hor').value);
@@ -121,7 +124,6 @@
 			});
 
 
-			console.log('gameBoard', gameBoard);
 
 			// 타이머 만들기
 			function addZeroForSingleDigit(digit) {
@@ -135,7 +137,7 @@
 			timer.classList.add('timer');
 			let timerSecond = 0;
 			timer.innerHTML = "00:00";
-			setInterval(() => {
+			const setTimer = setInterval(() => {
 				timerSecond++;
 				timer.innerHTML = addZeroForSingleDigit(Math.floor(timerSecond / 60)) + ":" + addZeroForSingleDigit(timerSecond % 60);
 			}, 1000);
@@ -147,8 +149,8 @@
 			LimitFlagElement.classList.add('flag');
 			function flagElementReflash(limit) {
 				LimitFlagElement.innerHTML = `🚩 ${limit}`;
-				gameBoardElement.appendChild(LimitFlagElement);
 			}
+			gameBoardElement.appendChild(LimitFlagElement);
 			flagElementReflash(LimitFlag);
 
 			// 우클릭 깃발 생성 이벤트리스너
@@ -168,6 +170,7 @@
 				const targetNo = e.target.dataset.no;
 				if(!targetNo) return;
 				if(e.target.dataset.flag === "false") {
+					if(LimitFlag <= 0) return; // flag 소진시 실행방지
 					e.target.dataset.flag = "true";
 					e.target.innerHTML = '🚩';
 					mineFlagNumbers.push(targetNo);
@@ -184,9 +187,19 @@
 					checkMineFlag(targetNo);
 					e.target.dataset.flag = "false";
 				}
-				console.log('깃발', mineFlagNumbers);
 			});
 
+			// 열린 칸 카운트
+			let openBoxCnt = 0;
+			// 결과메세지 함수
+			function alertMsg(msg) {
+				const loseMsg = document.createElement('h1');
+				loseMsg.classList.add('lose-msg')
+				loseMsg.innerHTML = msg;
+				gameBoardElement.appendChild(loseMsg);
+				gameBoardElement.classList.add('complete');
+				clearInterval(setTimer);
+			}
 			// 칸을 클릭했을때
 			table.addEventListener('click', function(e) {
 				const targetNo = e.target.dataset.no;
@@ -198,14 +211,15 @@
 				const mineCol = (targetNo - 1) % gameHor;
 				const target = e.target;
 				target.classList.add('open');
+				openBoxCnt++;
+				if(openBoxCnt === gameHor * gameVer - gameMine) {
+					alertMsg('You are Win 😃');
+				}
 
+				console.log('openBoxCnt', openBoxCnt);
 				if(gameBoard[mineRow][mineCol] === 2) {
 					target.innerHTML = '💥';
-					const loseMsg = document.createElement('h1');
-					loseMsg.classList.add('lose-msg')
-					loseMsg.innerHTML = 'You are lose 🥵';
-					gameBoardElement.appendChild(loseMsg);
-					gameBoardElement.classList.add('complete');
+					alertMsg('You are lose 🥵');
 				}
 				else {
 					// #체크범위
