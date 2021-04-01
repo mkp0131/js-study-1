@@ -7,8 +7,99 @@
   <title>Document</title>
 </head>
 <body>
+	<style>
+		.btn-check {
+			width: 100%;
+			height: 50vh;
+			background: gray;
+			font-size: 32px;
+			pointer-events: auto;
+		}
+		.btn-check.cancel {
+			background: red;
+		}
+		.btn-check.go {
+			background: greenyellow;
+			pointer-events: auto;
+		}
+		.btn-check.end {
+			background: paleturquoise;
+			pointer-events: none;
+		}
+	</style>
+	<button class="btn-check js-btn-check" data-current="ready">
+		화면이 초록색이되면 클릭해주세요.
+	</button>
+	<ul class="js-result-list"></ul>
   <script>
-    
+		// 버튼
+		const btnCheck = document.querySelector('.js-btn-check');
+		// 게임결과리스트
+		const resultList = document.querySelector('.js-result-list');
+
+		// 시작시간, 반응시간
+		let startTime;
+		let endTime;
+
+		// 게임결과 저장 array
+		let gameResult = [];
+
+		// 게임이 실행되는 setTimeout 저장
+		let gameSetTimeout;
+
+		// 2 ~ 7 사이의 값
+		function gameInit() {
+			btnCheck.dataset.current = "ready";
+			btnCheck.innerHTML = '화면이 초록색이되면 클릭해주세요.';
+			startTime = 0;
+			endTime = 0;
+			const gameTime = Math.ceil(Math.random() * 2) + 2;
+			gameSetTimeout = setTimeout(() => {
+				btnCheck.dataset.current = "go";
+				btnCheck.classList.add('go');
+				startTime = new Date().getTime();
+			}, gameTime * 1000);
+		}
+
+		btnCheck.addEventListener('click', () => {
+			const current = btnCheck.dataset.current;
+			if(current === 'ready') {
+				clearTimeout(gameSetTimeout);
+				btnCheck.classList.add('cancel');
+				btnCheck.innerHTML = '너무 빨리 클릭했습니다.';
+				setTimeout(() => {
+					btnCheck.classList.remove('cancel');
+					gameInit();
+				}, 1000);
+			}
+			else {
+
+				btnCheck.dataset.current = "end";
+
+				endTime = new Date().getTime();
+				const reactTime = (endTime - startTime) / 1000;
+				btnCheck.classList.add('end');
+				btnCheck.classList.remove('go');
+				btnCheck.innerHTML = `반응속도 ${reactTime}초 입니다.<br/>2초후 재시작됩니다.`;
+	
+				// 결과리스트 생성
+				gameResult.push(reactTime);
+				resultList.innerHTML = '';
+				gameResult.forEach((result, index) => {
+					const resultLine = document.createElement('li');
+					resultLine.innerHTML = `${index + 1}차 시도: ${result}초`;
+					resultList.appendChild(resultLine);
+				});
+	
+				// 2초후에 게임버튼 초기화
+				setTimeout(() => {
+					btnCheck.classList.remove('end');
+					gameInit();
+				}, 2000);
+			}
+		});
+
+		gameInit();
   </script>
 </body>
 </html>
