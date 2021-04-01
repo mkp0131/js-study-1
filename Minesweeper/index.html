@@ -59,7 +59,7 @@
 	<form onsubmit="gameInit();">
 		가로: <input type="text" name="hor" class="js-game-hor" value="10" />
 		세로: <input type="text" name="ver" class="js-game-ver" value="10" />
-		지뢰: <input type="text" name="mine" class="js-game-mine" value="20" />
+		지뢰: <input type="text" name="mine" class="js-game-mine" value="10" />
 		<button type="submit">생성</button>
 	</form>
 	<hr />
@@ -200,13 +200,16 @@
 				gameBoardElement.classList.add('complete');
 				clearInterval(setTimer);
 			}
+
+			// 다음으로 체크해야될 번호들 array
+			let nextCheckArr = [];
+
 			// 칸을 클릭했을때
 			table.addEventListener('click', function(e) {
 				const targetNo = e.target.dataset.no;
 				if(!targetNo) return; // 외부영역 클릭방지
 				const targetFlag = e.target.dataset.flag;
 				if(targetFlag !== "false") return; // 물음표, 느낌표 있을시 클릭방지 
-
 				const mineRow = Math.floor((targetNo - 1) / gameHor);
 				const mineCol = (targetNo - 1) % gameHor;
 				const target = e.target;
@@ -216,7 +219,6 @@
 					alertMsg('You are Win 😃');
 				}
 
-				console.log('openBoxCnt', openBoxCnt);
 				if(gameBoard[mineRow][mineCol] === 2) {
 					target.innerHTML = '💥';
 					alertMsg('You are lose 🥵');
@@ -265,13 +267,24 @@
 							const dataNo = parseInt(checkTarget[1]) + 1;
 							const clickTarget = document.querySelector(`.js-game-board td[data-no="${dataNo}"]`);
 							if(!clickTarget.classList.contains('open')) {
-								clickTarget.click();
+								if(!nextCheckArr.includes(dataNo)) {
+									nextCheckArr.push(dataNo);
+								}
 							}
 						});
 					}
+					setTimeout(() => {
+						nextCheckMine();
+					}, 0);
 				}
 			});
 
+			function nextCheckMine() {
+				if(nextCheckArr.length === 0) return;
+				const dataNo = nextCheckArr.splice(0, 1);
+				const clickTarget = document.querySelector(`.js-game-board td[data-no="${dataNo}"]`);
+				clickTarget.click();
+			}
 		}
 	</script>
 </body>
