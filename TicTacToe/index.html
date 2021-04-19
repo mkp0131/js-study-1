@@ -113,34 +113,45 @@
 				return false;
 			}
 	
+			const resultAlert = (draw) => {
+				let txt = mark + '가 이겼습니다.'
+				if(draw) {
+					txt = '무승부 입니다.';
+				}
+				setTimeout(() => {
+					alert(txt);
+				}, 500);
+			}
+
 			const checkResult = (squareRow, squareColumn, mark) => {
 				// 횟수카운트
 				time++;
 
 				// 가로, 세로 체크
 				if(checkRow(squareRow, mark) || checkColumn(squareColumn, mark)) {
-					alert(mark + '가 이겼습니다.');
-					gameEnd = true;
 					gameTableDisabled();
+					resultAlert();
+					gameEnd = true;
 					return;
 				};
 				// 대각선 체크
 				const square_position = Math.abs(squareRow - squareColumn);
 				if(square_position === 0 || square_position === 2) {
 					if(checkDiagonal(squareRow, squareColumn, mark)) {
-						alert(mark + '가 이겼습니다.');
-						gameEnd = true;
 						gameTableDisabled();
+						resultAlert();
+						gameEnd = true;
 						return;
 					}
 				}
 				// 무승부 체크
 				if(time === 9) {
-					alert('무승부 입니다.');
-					gameEnd = true;
 					gameTableDisabled();
+					resultAlert(true);
+					gameEnd = true;
 					return;
 				}
+				
 			}
 			
 			// Mark 변경
@@ -194,9 +205,7 @@
 						markInit(computerRow, computerCol);
 						gameTableDisabled();
 					}, 500);
-				} else {
-					gameTableDisabled();
-				}
+				} 
 			}
 
 			const squares = document.querySelectorAll('.square');
