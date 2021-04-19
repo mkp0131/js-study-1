@@ -18,6 +18,10 @@
 		table {
 			border-collapse: collapse;
 		}
+		table.disabled {
+			pointer-events: none;
+			background: #999;
+		}
 		table tr td {
 			width: 100px;
 			height: 100px;
@@ -30,7 +34,7 @@
 			margin-top: 10px;
 		}
 	</style>
-	<table>
+	<table class="js-gameBorad">
 		<tbody>
 			<tr>
 				<td class="square" data-row="0" data-column="0">1</td>
@@ -54,7 +58,9 @@
 		const gameInit = () => {
 			
 			let turn = true;
+			let mark = '❌';
 			let time = 0;
+			let gameEnd = false;
 			let gameBoard = [
 				[null, null, null],
 				[null, null, null],
@@ -108,9 +114,14 @@
 			}
 	
 			const checkResult = (squareRow, squareColumn, mark) => {
+				// 횟수카운트
+				time++;
+
 				// 가로, 세로 체크
 				if(checkRow(squareRow, mark) || checkColumn(squareColumn, mark)) {
 					alert(mark + '가 이겼습니다.');
+					gameEnd = true;
+					gameTableDisabled();
 					return;
 				};
 				// 대각선 체크
@@ -118,35 +129,88 @@
 				if(square_position === 0 || square_position === 2) {
 					if(checkDiagonal(squareRow, squareColumn, mark)) {
 						alert(mark + '가 이겼습니다.');
+						gameEnd = true;
+						gameTableDisabled();
 						return;
 					}
 				}
 				// 무승부 체크
 				if(time === 9) {
 					alert('무승부 입니다.');
+					gameEnd = true;
+					gameTableDisabled();
 					return;
 				}
 			}
-	
+			
+			// Mark 변경
+			const changeMark = () => {
+				turn = !turn;
+				if(turn) {
+					mark = '❌';
+				}
+				else {
+					mark = '⭕';
+				}
+			}
+
+			// Mark 체크
+			const checkMark = (row, col) => {
+				gameBoard[row][col] = mark;
+			}
+
+			// Mark 생성
+			const markInit = (row, col) => {
+				checkMark(row, col);
+				checkResult(row, col, mark);
+				changeMark(turn);
+			}
+
+			const gameTableDisabled = () => {
+				const gameBoardTable = document.querySelector('.js-gameBorad');
+				if(gameBoardTable.classList.contains('disabled')) {
+					gameBoardTable.classList.remove('disabled');
+				}
+				else {
+					gameBoardTable.classList.add('disabled');
+				}
+			}
+
+			// 컴퓨터턴
+			const computerTurn = () => {
+				gameTableDisabled();
+				let nullOfGameBoard = [];
+				gameBoard.forEach((a, a_index) => {
+					a.forEach((b, b_index) => {
+						if(b === null) nullOfGameBoard.push([a_index, b_index]);
+					})
+				})
+				if(nullOfGameBoard.length) {
+					const randomIndexForGameBoard = Math.floor(Math.random() * nullOfGameBoard.length);
+					const computerRow = nullOfGameBoard[randomIndexForGameBoard][0];
+					const computerCol = nullOfGameBoard[randomIndexForGameBoard][1];
+					setTimeout(() => {
+						document.querySelector(`.square[data-row="${computerRow}"][data-column="${computerCol}"]`).textContent = mark;
+						markInit(computerRow, computerCol);
+						gameTableDisabled();
+					}, 500);
+				} else {
+					gameTableDisabled();
+				}
+			}
+
 			const squares = document.querySelectorAll('.square');
 			squares.forEach((square, index) => {
 				square.textContent = '';
 				square.addEventListener('click', function() {
 					this.removeEventListener('click', arguments.callee);
-					let mark = '⭕';
-					if(turn) {
-						mark = '❌';
-					}
 					this.textContent = mark;
-					turn = !turn;
-					time++;
 					let squareRow = square.dataset.row; 
 					let squareColumn = square.dataset.column;
-					gameBoard[squareRow][squareColumn] = mark;
-					checkResult(squareRow, squareColumn, mark);
+					markInit(squareRow, squareColumn);
+					if(!gameEnd) computerTurn();
 				});
 			});
-
 		}
 
 		gameInit();
