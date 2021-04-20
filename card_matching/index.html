@@ -42,7 +42,9 @@
       background: red;
       transform: rotateY(180deg);
     }
-
+    .card.flip {
+      pointer-events: none;
+    }
     .card.flip .card-front {
       transform: rotateY(180deg);
     }
@@ -55,8 +57,19 @@
     const boardCol = 5;
     const boardRow = 4;
     const gameBoard = document.querySelector('.js-game-board');
+    const cardColorArr = ['red', 'green', 'darkgray', 'blue', 'purple', 'orange', 'pink', 'black', 'tomato', 'aqua'];
+    const cardColorTwiceArr = [...cardColorArr, ...cardColorArr];
+    const randomCardColorArr = [];
+    while(cardColorTwiceArr.length > 0) {
+      const selectColor = cardColorTwiceArr.splice(Math.floor(Math.random() * cardColorTwiceArr.length), 1);
+      randomCardColorArr.push(selectColor[0]);
+    }
+    let flipCardArr = [];
+    let openCardArr = [];
+
     gameBoard.style.gridTemplateColumns = `repeat(${boardCol}, 120px)`;
     for (let i = 0; i < boardCol * boardRow; i++) {
+      const cardColor = randomCardColorArr[i];
       const card = document.createElement('div');
       const card_front = document.createElement('div');
       const card_back = document.createElement('div');
@@ -64,11 +77,30 @@
       card_front.className = 'card-front';
       card_back.className = 'card-back';
       card_front.textContent = 'F';
-      card_back.textContent = 'B';
+      card_back.style.backgroundColor = cardColor;
+      card_back.textContent = cardColor;
+      card_back.dataset.color = cardColor;
       card.appendChild(card_front);
       card.appendChild(card_back);
+
       card.addEventListener('click', () => {
         card.classList.add('flip');
+        flipCardArr.push(card);
+        if(flipCardArr.length > 1) {
+          if(flipCardArr[0].lastChild.dataset.color === flipCardArr[1].lastChild.dataset.color) {
+            openCardArr.push(card);
+          }
+          else {
+            const copyFlipCardArr = [...flipCardArr];
+            setTimeout(() => {
+              copyFlipCardArr.forEach(card => {
+                card.classList.remove('flip');
+              });
+            }, 500);
+          }
+          flipCardArr = [];
+        }
+        console.log('flipCardArr', flipCardArr);
       });
       gameBoard.appendChild(card);
     }
