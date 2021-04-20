@@ -8,9 +8,28 @@
 </head>
 <body>
   <style>
+    div {
+      box-sizing: border-box;
+    }
     .game-board {
       display: grid;
       gap: 10px;
+      position: relative;
+    }
+    .game-board .game-end-msg {
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 100%;
+      padding: 1em;
+      background: rgba(0, 0, 0, 0.6);
+      color: #fff;
+      font-weight: 700;
+      font-size: 32px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
     .card {
       width: 120px;
@@ -64,11 +83,26 @@
       const selectColor = cardColorTwiceArr.splice(Math.floor(Math.random() * cardColorTwiceArr.length), 1);
       randomCardColorArr.push(selectColor[0]);
     }
+    const initCardArr = [];
     let flipCardArr = [];
     let openCardArr = [];
 
     gameBoard.style.gridTemplateColumns = `repeat(${boardCol}, 120px)`;
-    for (let i = 0; i < boardCol * boardRow; i++) {
+    gameBoard.style.width = `${boardCol * 130 - 10}px`;
+    const boardTotalSquare = boardCol * boardRow;
+
+    function checkGameEnd() {
+      if(openCardArr.length === boardTotalSquare / 2) {
+        const endMsg = document.createElement('div');
+        endMsg.className = 'game-end-msg';
+        endMsg.innerHTML = 'Game End';
+        setTimeout(() => {
+          gameBoard.appendChild(endMsg);
+        }, 500);
+      }
+    }
+
+    for (let i = 0; i < boardTotalSquare; i++) {
       const cardColor = randomCardColorArr[i];
       const card = document.createElement('div');
       const card_front = document.createElement('div');
@@ -89,6 +123,7 @@
         if(flipCardArr.length > 1) {
           if(flipCardArr[0].lastChild.dataset.color === flipCardArr[1].lastChild.dataset.color) {
             openCardArr.push(card);
+            checkGameEnd();
           }
           else {
             const copyFlipCardArr = [...flipCardArr];
@@ -100,10 +135,20 @@
           }
           flipCardArr = [];
         }
-        console.log('flipCardArr', flipCardArr);
       });
       gameBoard.appendChild(card);
+
+      setTimeout(() => {
+        card.classList.add('flip');
+        initCardArr.push(card);
+      }, 500 + 100 * i);
     }
+
+    setTimeout(() => {
+      initCardArr.forEach(card => {
+        card.classList.remove('flip');
+      });
+    }, 1500 + 100 * boardTotalSquare);
   </script>
 </body>
 </html>
