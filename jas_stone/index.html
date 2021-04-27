@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+</head>
+<body>
+	<style>
+		html,
+		body {
+			margin: 0;
+			padding: 0;
+			height: 100vh;
+			overflow: hidden;
+			box-sizing: border-box;
+		}
+		.hidden-side {
+			display: none;
+		}
+		.side-section {
+			height: 50vh;
+			display: flex;
+			flex-direction: column;
+		}
+		.side-section .deck {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: .5em;
+			background: #ffcaca;
+			gap: 5px;
+		}
+		.side-section .hero {	
+			padding: .5em;
+			background: #fff5bf;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+		.side-section .field {
+			padding: .5em;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			flex-grow: 1;
+			gap: 5px;
+		}
+		.my-side-section {
+			background: #fafafa;
+		}
+		
+		.card {
+			background: #fff;
+			border: 1px solid #888;
+			border-radius: 4px;
+			overflow: hidden;
+			width: 90px;
+			height: 130px;
+			position: relative;
+			font-weight: 700;
+			color: teal;
+		}
+		.card .txt {
+			position: absolute;
+			left: 50%;
+			top: 50%;
+			transform: translate(-50%, -50%);
+			color: #212121;
+			font-size: 16px;
+			line-height: 1;
+		}
+		.card .attack {
+			position: absolute;
+			left: 5%;
+			bottom: 5%;
+			color: blue;
+		}
+		.card .hp {
+			position: absolute;
+			right: 5%;
+			bottom: 5%;
+			color: red;
+		}
+	</style>
+
+	<div class="other-side-section side-section js-other-side">
+		<div class="deck js-deck"></div>
+		<div class="hero js-hero"></div>
+		<div class="field js-field"></div>
+	</div>
+	<div class="my-side-section side-section js-my-side">
+		<div class="field js-field"></div>
+		<div class="hero js-hero"></div>
+		<div class="deck js-deck"></div>
+	</div>
+
+	<div class="hidden-side js-hidden-side">
+		<div class="card js-card">
+			<div class="txt js-txt"></div>
+			<div class="attack js-attack"></div>
+			<div class="hp js-hp"></div>
+			<div class="cost js-cost"></div>
+		</div>
+	</div>
+
+
+	<script>
+		const hiddenSide = document.querySelector('.js-hidden-side');
+
+		const mySide = document.querySelector('.js-my-side');
+		const mySideDeck = mySide.querySelector('.js-deck');
+		const otherSide = document.querySelector('.js-other-side');
+		const otherSideDeck = otherSide.querySelector('.js-deck');
+		let myCardNumber = 1;
+		let opponentCardNumber = 1;
+
+		// 카드 생성자
+		function Card(type, txt) {
+			this.txt    = txt;
+			this.type   = type;
+			// 포텐셜(기본 영웅카드)
+			let potential = 9; 
+			// 일반카드
+			if(type !== 'hero') {
+				potential = 5;
+				this.cost = Math.ceil(Math.random() * 3); // cost 1 ~ 3;
+			}
+			this.attack = Math.ceil(Math.random() * potential); // 공격력 1 ~ potential;
+			this.hp = Math.ceil(Math.random() * potential); // hp 1 ~ potential;
+		}
+// 		const heroCard = new Card('hero', 'hero');
+// 		const normalCard = new Card('normal', 'normal');
+// console.log('heroCard', heroCard);
+// console.log('normalCard', normalCard);
+
+
+		function deckInit(side) {
+			for (let i = 0; i < 5; i++) {
+				const normalCard = new Card('normal', 'normal');
+				const cloneCard = hiddenSide.querySelector('.js-card').cloneNode(true);
+				cloneCard.querySelector('.js-txt').innerHTML = normalCard.txt;
+				cloneCard.querySelector('.js-attack').innerHTML = normalCard.attack;
+				cloneCard.querySelector('.js-hp').innerHTML = normalCard.hp;
+				cloneCard.querySelector('.js-cost').innerHTML = normalCard.cost;
+	
+				if(side === 'myside') {
+					mySideDeck.appendChild(cloneCard);
+				}
+				else if (side === 'otherside') {
+					otherSideDeck.appendChild(cloneCard);
+				}
+			}
+		}
+
+
+		deckInit('myside');
+		deckInit('otherside');
+	</script>
+</body>
+</html>
